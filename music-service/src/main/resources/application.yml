@@ -1,0 +1,68 @@
+server:
+  port: 7630
+
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+  endpoint:
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+aws:
+  credentials:
+    access-key: AKIA2MUU47ACH4QKKHNP
+    secret-key: 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
+  region:
+    static: us-east-2
+  stack:
+    auto: false
+
+application:
+  bucket:
+    name: lyriqu
+
+
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 20MB
+      max-file-size: 50MB
+      max-request-size: 100MB
+  #datasource:
+    #url: jdbc:postgresql://localhost:5432/musicservice
+    #username: postgres
+    #password: Sleuteltje123
+    #driver-class-name: org.postgresql.Driver
+  datasource:
+    url: jdbc:postgresql://db-postgresql-lyriqu-cluster-do-user-8860308-0.b.db.ondigitalocean.com:25060/music
+    username: doadmin
+    password: vksf33msdevjvrwq
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.jdbc.lob.non_contextual-creation: true
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://cognito-idp.us-east-2.amazonaws.com/us-east-2_V4yvtYUjY
+  rabbitmq:
+    template:
+      receive-timeout: 600000
+      reply-timeout: 600000

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lyriqu-gateway
+  namespace: gateway
+  labels:
+    app: lyriqu-gateway
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: lyriqu-container-gateway
+  template:
+    metadata:
+      labels:
+        app: lyriqu-container-gateway
+    spec:
+      containers:
+        - name: lyriqu-gateway-nginx
+          image: registry.gitlab.com/lyriqu/gateway:${CICD_GIT_COMMIT}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+      imagePullSecrets:
+        - name: docker-registry
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lyriqu-gateway-service
+  namespace: gateway
+spec:
+  selector:
+    app: lyriqu-container-gateway
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: lyriqu-gateway-ingress
+  namespace: gateway
+spec:
+  rules:
+  - host: api.lyriqu.nl
+    http:
+      paths:
+      - backend:
+          serviceName: lyriqu-gateway-service
+          servicePort: 80
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - api.lyriqu.nl

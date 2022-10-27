@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lyriqu-payment-prod
+  namespace: payment-service
+  labels:
+    app: lyriqu-payment-prod
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: lyriqu-container-payment-prod
+  template:
+    metadata:
+      labels:
+        app: lyriqu-container-payment-prod
+    spec:
+      containers:
+        - name: lyriqu-payment-prod
+          image: registry.gitlab.com/lyriqu/services/payment-service:${CICD_GIT_COMMIT}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7628
+      imagePullSecrets:
+        - name: docker-registry
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lyriqu-payment-service
+  namespace: payment-service
+spec:
+  selector:
+    app: lyriqu-container-payment-prod
+  ports:
+    - protocol: TCP
+      port: 7628
+      targetPort: 7628
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: lyriqu-payments-ingress-prod
+  namespace: payment-service
+spec:
+  rules:
+  - host: api.lyriqu.nl
+    http:
+      paths:
+      - backend:
+          serviceName: lyriqu-payment-service
+          servicePort: 7628
+        path: /payment
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - api.lyriqu.nl

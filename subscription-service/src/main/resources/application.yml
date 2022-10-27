@@ -1,0 +1,31 @@
+server:
+  port: 7629
+
+spring:
+  #datasource:
+    #url: jdbc:postgresql://subscription-database:5432/subscription
+    #username: admin
+    #password: admin
+    #driver-class-name: org.postgresql.Driver
+  datasource:
+    url: jdbc:postgresql://db-postgresql-lyriqu-cluster-do-user-8860308-0.b.db.ondigitalocean.com:25060/subscription
+    username: doadmin
+    password: vksf33msdevjvrwq
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.jdbc.lob.non_contextual-creation: true
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://cognito-idp.us-east-2.amazonaws.com/us-east-2_V4yvtYUjY

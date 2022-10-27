@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lyriqu-subscription-prod
+  namespace: subscription-service
+  labels:
+    app: lyriqu-subscription-prod
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: lyriqu-container-subscription-prod
+  template:
+    metadata:
+      labels:
+        app: lyriqu-container-subscription-prod
+    spec:
+      containers:
+        - name: lyriqu-subscription-prod
+          image: registry.gitlab.com/lyriqu/services/subscription-service:${CICD_GIT_COMMIT}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7629
+      imagePullSecrets:
+        - name: docker-registry
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lyriqu-subscription-service
+  namespace: subscription-service
+spec:
+  selector:
+    app: lyriqu-container-subscription-prod
+  ports:
+    - protocol: TCP
+      port: 7629
+      targetPort: 7629
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: lyriqu-subscription-ingress-prod
+  namespace: subscription-service
+spec:
+  rules:
+  - host: api.lyriqu.nl
+    http:
+      paths:
+      - backend:
+          serviceName: lyriqu-subscription-service
+          servicePort: 7629
+        path: /subscription
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - api.lyriqu.nl

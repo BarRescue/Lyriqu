@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lyriqu-storage-prod
+  namespace: storage-service
+  labels:
+    app: lyriqu-storage-prod
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: lyriqu-container-storage-prod
+  template:
+    metadata:
+      labels:
+        app: lyriqu-container-storage-prod
+    spec:
+      containers:
+        - name: lyriqu-storage-prod
+          image: registry.gitlab.com/lyriqu/services/storage-service:${CICD_GIT_COMMIT}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7631
+      imagePullSecrets:
+        - name: docker-registry
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lyriqu-storage-service
+  namespace: storage-service
+spec:
+  selector:
+    app: lyriqu-container-storage-prod
+  ports:
+    - protocol: TCP
+      port: 7631
+      targetPort: 7631

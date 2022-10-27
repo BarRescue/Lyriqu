@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lyriqu-frontend
+  namespace: frontend
+  labels:
+    app: lyriqu-frontend
+spec:
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: lyriqu-container-frontend
+  template:
+    metadata:
+      labels:
+        app: lyriqu-container-frontend
+    spec:
+      containers:
+        - name: lyriqu-frontend-vue
+          image: registry.gitlab.com/lyriqu/frontend:${CICD_GIT_COMMIT}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+      imagePullSecrets:
+        - name: docker-registry
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lyriqu-frontend-service
+  namespace: frontend
+spec:
+  selector:
+    app: lyriqu-container-frontend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: lyriqu-frontend-ingress
+  namespace: frontend
+spec:
+  rules:
+  - host: lyriqu.nl
+    http:
+      paths:
+      - backend:
+          serviceName: lyriqu-frontend-service
+          servicePort: 3000
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - lyriqu.nl
+    secretName: echo-tls

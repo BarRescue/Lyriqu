@@ -1,0 +1,15 @@
+stages:
+- name: Build Dockerfile
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./Dockerfile
+      buildContext: .
+      tag: lyriqu/frontend:${CICD_GIT_COMMIT}
+      pushRemote: true
+      registry: registry.gitlab.com
+- name: Deploy
+  steps:
+  - applyYamlConfig:
+      path: ./deployment.yml
+timeout: 60
+notification: {}

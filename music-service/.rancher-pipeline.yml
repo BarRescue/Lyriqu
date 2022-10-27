@@ -1,0 +1,15 @@
+stages:
+- name: Build Dockerfile Back-end Acceptation
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./Dockerfile
+      buildContext: .
+      tag: lyriqu/services/music-service:${CICD_GIT_COMMIT}
+      pushRemote: true
+      registry: registry.gitlab.com
+    env:
+      PLUGIN_MTU: "1300"
+- name: Deploy Back-End Acceptation
+  steps:
+  - applyYamlConfig:
+      path: ./deployment.yml

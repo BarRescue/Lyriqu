@@ -1,0 +1,28 @@
+server:
+  port: 7631
+
+aws:
+  credentials:
+    access-key: AKIA2MUU47ACH4QKKHNP
+    secret-key: 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
+  region:
+    static: us-east-2
+  stack:
+    auto: false
+
+application:
+  bucket:
+    name: lyriqu
+
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2MB
+      max-file-size: 5MB
+      max-request-size: 10MB
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://cognito-idp.us-east-2.amazonaws.com/us-east-2_V4yvtYUjY

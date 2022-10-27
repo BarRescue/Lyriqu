@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lyriqu-monitoring-prod
+  namespace: monitoring-service
+  labels:
+    app: lyriqu-monitoring-prod
+spec:
+  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: lyriqu-container-monitoring-prod
+  template:
+    metadata:
+      labels:
+        app: lyriqu-container-monitoring-prod
+    spec:
+      containers:
+        - name: lyriqu-monitoring-prod
+          image: registry.gitlab.com/lyriqu/services/monitoring-service:${CICD_GIT_COMMIT}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 7632
+      imagePullSecrets:
+        - name: docker-registry
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lyriqu-monitoring-service
+  namespace: monitoring-service
+spec:
+  selector:
+    app: lyriqu-container-monitoring-prod
+  ports:
+    - protocol: TCP
+      port: 7632
+      targetPort: 7632
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: lyriqu-monitoring-ingress-prod
+  namespace: monitoring-service
+spec:
+  rules:
+  - host: api.lyriqu.nl
+    http:
+      paths:
+      - backend:
+          serviceName: lyriqu-monitoring-service
+          servicePort: 7632
+        path: /monitoring
+        pathType: ImplementationSpecific
+  tls:
+  - hosts:
+    - api.lyriqu.nl
